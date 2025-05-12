@@ -22,7 +22,7 @@ export default {
 
     const banner = [
       "╔══════════════════════════════════════════════════╗",
-      "║              🤖 BOT CONNECTED – KARUSA 🤖       ║",
+      "║              🤖 BOT CONNECTED – BETA 🤖       ║",
       "╚══════════════════════════════════════════════════╝"
     ].join("\n");
 
@@ -86,10 +86,9 @@ export default {
       status: "dnd",
       activities: [
         {
-          name: "Karusa BOT",
+          name: "Beta Bot",
           type: ActivityType.Streaming,
-          url: "https://www.twitch.tv/karusa_"
-        }
+          url: "https://www.twitch.tv/betasown"        }
       ]
     });
   },
