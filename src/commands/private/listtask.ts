@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import pool from '../../database/mariadb';
 
 export const command = {
@@ -14,13 +14,22 @@ export const command = {
         return interaction.reply('📋 La to-do list est vide.');
       }
 
-      // Construire un message avec les tâches
-      const tasks = rows.map((task: any) => {
-        return `**ID**: ${task.id}\n**Nom**: ${task.nom}\n**Description**: ${task.description || 'Aucune'}\n**Statut**: ${task.status}\n**Criticité**: ${task.criticite}\n**Deadline**: ${task.deadline || 'Aucune'}\n`;
-      }).join('\n---\n');
+      // Construire un embed pour afficher les tâches
+      const embed = new EmbedBuilder()
+        .setTitle('📋 Liste des tâches')
+        .setColor('#00AAFF')
+        .setTimestamp();
 
-      // Répondre avec la liste des tâches
-      await interaction.reply(`📋 **Liste des tâches**:\n\n${tasks}`);
+      // Ajouter les tâches sous forme de tableau
+      rows.forEach((task: any) => {
+        embed.addFields({
+          name: task.nom,
+          value: `**Description**: ${task.description || 'Aucune'}\n**Statut**: ${task.status}\n**Criticité**: ${task.criticite}\n**Deadline**: ${task.deadline || 'Aucune'}`,
+        });
+      });
+
+      // Répondre avec l'embed
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply('❌ Une erreur est survenue lors de la récupération des tâches.');
