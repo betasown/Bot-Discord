@@ -1,7 +1,8 @@
 import { ModalSubmitInteraction } from 'discord.js';
-import { writeFile, mkdir, readFile } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { ensureDailyNote } from '../../function/bot/noteUtils';
 
 export default {
   id: 'humeur_modal',
@@ -11,17 +12,10 @@ export default {
     const meteo = interaction.fields.getTextInputValue('meteo');
     const cafe = interaction.fields.getTextInputValue('cafe');
 
-    // Détermine la date du jour
     const date = new Date().toISOString().slice(0, 10);
-    const notesDir = join(__dirname, '../../../notes');
-    const filePath = join(notesDir, `${date}.md`);
+    const filePath = await ensureDailyNote(date);
 
-    // Crée le dossier notes/ s'il n'existe pas
-    if (!existsSync(notesDir)) {
-      await mkdir(notesDir, { recursive: true });
-    }
-
-    // Prépare le contenu à écrire/remplacer
+    let content = await readFile(filePath, 'utf-8');
     const humeurSection = [
       '## 📍- **Humeur & Énergie... :**',
       '',
@@ -32,19 +26,11 @@ export default {
       '',
     ].join('\n');
 
-    let content = '';
-    if (existsSync(filePath)) {
-      // Si le fichier existe, on remplace la section Humeur & Énergie
-      content = await readFile(filePath, 'utf-8');
-      const regex = /## 📍- \*\*Humeur & Énergie\.\.\. :\*\*[\s\S]*?(?=^## |\Z)/m;
-      if (regex.test(content)) {
-        content = content.replace(regex, humeurSection + '\n');
-      } else {
-        content = humeurSection + '\n' + content;
-      }
+    const regex = /## 📍- \*\*Humeur & Énergie\.\.\. :\*\*[\s\S]*?(?=^## |\Z)/m;
+    if (regex.test(content)) {
+      content = content.replace(regex, humeurSection + '\n');
     } else {
-      // Nouveau fichier avec juste la section humeur
-      content = `# Daily Note - ${date}\n\n${humeurSection}`;
+      content = humeurSection + '\n' + content;
     }
 
     await writeFile(filePath, content, 'utf-8');
